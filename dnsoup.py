@@ -11,23 +11,16 @@ warnings.filterwarnings('ignore')
 
 '''
 RESOURCES LIST:
-https://stackoverflow.com/questions/6076690/verbose-level-with-argparse-and-multiple-v-options
-
-https://stackoverflow.com/questions/5603364/how-to-code-argparse-combinational-options-in-python
-
-https://stackoverflow.com/questions/43786174/how-to-pass-and-parse-a-list-of-strings-from-command-line-with-argparse-argument
-
-https://stackoverflow.com/questions/11540854/file-as-command-line-argument-for-argparse-error-message-if-argument-is-not-va
-
-https://stackoverflow.com/questions/27957373/python-import-and-initialize-argparse-after-if-name-main
-
-https://gist.github.com/linuxluigi/0613c2c699d16cb5e171b063c266c3ad
-
-https://stackoverflow.com/questions/8989457/dnspython-setting-query-timeout-lifetime
-
-https://mkaz.blog/code/python-argparse-cookbook/
-
-https://stackoverflow.com/questions/55324449/how-to-specify-a-minimum-or-maximum-float-value-with-argparse
+[1]  https://stackoverflow.com/questions/6076690/verbose-level-with-argparse-and-multiple-v-options
+[2]  https://stackoverflow.com/questions/5603364/how-to-code-argparse-combinational-options-in-python
+[3]  https://stackoverflow.com/questions/43786174/how-to-pass-and-parse-a-list-of-strings-from-command-line-with-argparse-argument
+[4]  https://stackoverflow.com/questions/11540854/file-as-command-line-argument-for-argparse-error-message-if-argument-is-not-va
+[5]  https://stackoverflow.com/questions/27957373/python-import-and-initialize-argparse-after-if-name-main
+[6]  https://gist.github.com/linuxluigi/0613c2c699d16cb5e171b063c266c3ad
+[7]  https://stackoverflow.com/questions/8989457/dnspython-setting-query-timeout-lifetime
+[8]  https://mkaz.blog/code/python-argparse-cookbook/
+[9]  https://stackoverflow.com/questions/55324449/how-to-specify-a-minimum-or-maximum-float-value-with-argparse
+[10] https://stackoverflow.com/questions/14463277/how-to-disable-python-warnings
 '''
 
 verbosity = 0
@@ -59,7 +52,9 @@ def init_resolver(resolver_addrs=None):
     '''
     Note: Using dnspython's Stub Resolver component here.
 
-    Dnspython’s resolver module implements a “stub resolver”, which does DNS recursion with the aid of a remote “full resolver” provided by an ISP or other service provider. By default, dnspython will use the full resolver specified by its host system, but another resolver can easily be used simply by setting the nameservers attribute.
+    Dnspython’s resolver module implements a “stub resolver”, which does DNS recursion with the aid of a remote “full resolver” 
+    provided by an ISP or other service provider. By default, dnspython will use the full resolver specified by its host system, 
+    but another resolver can easily be used simply by setting the nameservers attribute.
 
     Link: https://dnspython.readthedocs.io/en/latest/resolver.html#resolver
     '''
@@ -118,78 +113,13 @@ def update_resolver_nameserver(resolver, nameserver):
 def update_resolver_timeout(resolver, timeout):
     '''
     See this link:  https://dnspython.readthedocs.io/en/latest/resolver-class.html
-
-    We could use resolver.timeout if we are only concerned with time
-    for server to responsd.
-
+    We could use resolver.timeout if we are only concerned with time for server to responsd.
     Or we can use resolver.lifetime if we want to set total round trip time.
-
     Lifetime seems to work better than timeout in for our purposes.
     '''
     #resolver.timeout = float(timeout)
     resolver.lifetime = float(timeout)
     return resolver
-
-
-def v1_output_generation(targets):
-    '''
-    this is some legacy code from the first iteration of this tool
-    that i am saving because i may want to have the option to toggle
-    between the two output formats. 
-    '''
-    witnessed_targets = []
-    #for target in targets:
-    while targets:
-        target_obj = targets.pop()
-        target = target_obj[0] # target address
-        recursion_depth = target_obj[1] # recursion level
-        if target in witnessed_targets:
-            continue
-        else:
-            witnessed_targets.append(target)
-        if is_ip_address(target):
-            if verbosity > 1:
-                print(f"{target} is an IP address")
-            target_type = 'ip'
-        elif is_hostname(target):
-            if verbosity > 1:
-                print(f"{target} is a hostname")
-            target_type = 'hostname'
-        else:
-            if verbosity > 1:
-                print(f"{target} is neither an IP address nor a hostname")
-            continue
-
-        for nameserver in nameserver_list:
-            resolver = update_resolver_nameserver(resolver, nameserver)
-            if resolver == False:
-                # The namerserver passed in was not an IP so skip over it. 
-                continue            
-            successful_queries = dns_lookup(target_type, target, resolver, nameserver, record_types, recursion_depth)
-            
-
-            if successful_queries:
-                if verbosity > 1:
-                    print("\nSucessful Queries")
-                    print(successful_queries)
-                    print()
-                all_queries.get(target, )
-                ''' # Old way before json format changes
-                query_list = all_queries.get(target, [])
-                query_list.extend(successful_queries)
-                all_queries.update({target:query_list}) 
-                '''
-
-    
-        if recursive:
-            for successful_query in successful_queries:
-                retrieved_record = successful_query.get('answer')
-                if retrieved_record in witnessed_targets:
-                    continue
-                else:
-                    if verbosity > 1:
-                        print(f"[*] Appending {retrieved_record} to target list for recursive processing.")
-                    targets.append((retrieved_record, recursion_depth+1)) 
 
 
 def hostname_single_dns_lookup(target, resolver, nameserver, record_type, recursion_depth):
@@ -405,7 +335,6 @@ def range_limited_float_type(arg):
     return f
 
 
-
 def get_parser():
     """
     Creates a new argument parser.
@@ -438,24 +367,19 @@ def get_parser():
     return parser
 
 
-
 def main(timeout, targets, resolver_addrs, record_types, recursive, max_recursion_depth, verbose, output_file):
     global verbosity
-    verbosity = verbose
-    
+    verbosity = verbose 
     all_queries = {}
     resolver = init_resolver()
     if resolver_addrs is not [] and resolver_addrs is not None:
         nameserver_list = resolver_addrs
     else:
         nameserver_list = resolver.nameservers
-
     if timeout:
         resolver = update_resolver_timeout(resolver, timeout)
-
-
     witnessed_targets = []
-    #for target in targets:
+    
     while targets:
         target_obj = targets.pop()
         target = target_obj[0] # target address
@@ -486,7 +410,6 @@ def main(timeout, targets, resolver_addrs, record_types, recursive, max_recursio
                 continue            
             successful_queries = dns_lookup(target_type, target, resolver, nameserver, record_types, recursion_depth)
             
-
             if successful_queries:
                 if verbosity > 1:
                     print("\nSucessful Queries")
@@ -501,7 +424,6 @@ def main(timeout, targets, resolver_addrs, record_types, recursive, max_recursio
                         recursive_witnessed_targets = []
                         recursive_targets = []
                         recursive_targets.append(successful_query)
-
                         
                         while recursive_targets:
                             # recursive_target_item == 'rti'
@@ -509,7 +431,7 @@ def main(timeout, targets, resolver_addrs, record_types, recursive, max_recursio
                             rti_answer = recursive_target.get('answer')
                             rti_recursion_depth = recursive_target.get('recursion_depth')
                             if rti_answer in witnessed_targets:
-                                # this points back to a base (root level) target we...
+                                # this points back to a base (root level) target we examined.
                                 # may be some issues here if we find a recurisve target thats also in our list
                                 # of targets to process but has not yet been processed... shouldnt be an issue, 
                                 # but may end up with some duplicate data in that case. 
@@ -519,8 +441,7 @@ def main(timeout, targets, resolver_addrs, record_types, recursive, max_recursio
                                 # no need to recursive twice. 
                                 continue
                             recursive_witnessed_targets.append(rti_answer)
-                            
-                            
+                                                        
                             if rti_recursion_depth + 1 > max_recursion_depth:
                                 continue
                             new_recursion_depth = rti_recursion_depth + 1
@@ -539,11 +460,9 @@ def main(timeout, targets, resolver_addrs, record_types, recursive, max_recursio
                                     recursive_target['children'].append(successful_recursive_query)
                                     recursive_targets.append(successful_recursive_query)
 
-
                 nameserver_to_queries_list.extend(successful_queries)
                 target_to_nameserver_mapping.update({nameserver:nameserver_to_queries_list})
                 all_queries.update({target:target_to_nameserver_mapping})
-
 
     if all_queries:
         print(all_queries)
@@ -554,7 +473,6 @@ def main(timeout, targets, resolver_addrs, record_types, recursive, max_recursio
             output_file += '.json'
         with open(output_file, 'w') as output_json_file:
             json.dump(all_queries, output_json_file)
-
 
 
 if __name__ == "__main__":
@@ -590,4 +508,3 @@ if __name__ == "__main__":
         print(f"Using the following record types: {record_types}")
 
     main(args.timeout, targets, resolver_addrs, record_types, args.recursive_flag, args.max_recursion_depth, args.verbose, args.output_file)
-    #main(sys.argv[1:])
