@@ -176,7 +176,7 @@ def hostname_single_dns_lookup(target, resolver, nameserver, record_type, recurs
     return successful_queries
 
 
-def dns_lookup(target_type, target, resolver, nameserver, record_types, recursion_depth):
+def dns_lookup(target_type, target, resolver, nameserver, record_types, recursive_flag, recursion_depth):
     successful_queries = []
     if target_type == 'hostname':
         for record_type in record_types:
@@ -192,7 +192,8 @@ def dns_lookup(target_type, target, resolver, nameserver, record_types, recursio
                     query_result["resolver"] = nameserver
                     query_result["resource_record"] = record_type
                     query_result["answer"] = answer.to_text()
-                    query_result["recursion_depth"] = recursion_depth
+                    if recursive_flag:
+                        query_result["recursion_depth"] = recursion_depth
                     query_result["timestamp"] = datetime.now(timezone.utc).isoformat().replace("+00:00", "Z")
                     if verbosity > 1:
                         print(query_result)
@@ -243,7 +244,8 @@ def dns_lookup(target_type, target, resolver, nameserver, record_types, recursio
                 query_result["resolver"] = nameserver
                 query_result["resource_record"] = "PTR"
                 query_result["answer"] = answer.to_text()
-                query_result["recursion_depth"] = recursion_depth
+                if recursive_flag:
+                    query_result["recursion_depth"] = recursion_depth
                 query_result["timestamp"] = datetime.now(timezone.utc).isoformat().replace("+00:00", "Z")
                 successful_queries.append(query_result)
         except dns.resolver.NoAnswer as e:
@@ -408,7 +410,7 @@ def main(timeout, targets, resolver_addrs, record_types, recursive, max_recursio
                 resolver = og_resolver # restore resolver value otherwise we get attribute accessing issues later.
                 # The namerserver passed in was not an IP so skip over it. 
                 continue            
-            successful_queries = dns_lookup(target_type, target, resolver, nameserver, record_types, recursion_depth)
+            successful_queries = dns_lookup(target_type, target, resolver, nameserver, record_types, recursive, recursion_depth)
             
             if successful_queries:
                 if verbosity > 1:
@@ -447,9 +449,9 @@ def main(timeout, targets, resolver_addrs, record_types, recursive, max_recursio
                             new_recursion_depth = rti_recursion_depth + 1
                             
                             if is_ip_address(rti_answer):
-                                successful_recursive_queries = dns_lookup('ip', rti_answer, resolver, nameserver, record_types, new_recursion_depth)
+                                successful_recursive_queries = dns_lookup('ip', rti_answer, resolver, nameserver, record_types, recursive, new_recursion_depth)
                             elif is_hostname(rti_answer):
-                                successful_recursive_queries = dns_lookup('hostname', rti_answer, resolver, nameserver, record_types, new_recursion_depth)
+                                successful_recursive_queries = dns_lookup('hostname', rti_answer, resolver, nameserver, record_types, recursive, new_recursion_depth)
                             else:
                                 if verbosity > 1:
                                     print(f"{target} is neither an IP address nor a hostname")
