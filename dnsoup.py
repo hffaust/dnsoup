@@ -467,7 +467,7 @@ def main(timeout, targets, resolver_addrs, record_types, recursive, max_recursio
                 all_queries.update({target:target_to_nameserver_mapping})
 
     if all_queries:
-        print(all_queries)
+        print(json.dumps(all_queries))
 
     if output_file is not None:
         if output_file[-5:] != '.json':
